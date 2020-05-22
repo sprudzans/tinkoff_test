@@ -7,18 +7,49 @@ let catalog = document.querySelector('#catalog'),
     cartQuantity = document.querySelector('#cartQuantity'),
     data = [];
 
-
-let request = new XMLHttpRequest();
-request.open('GET', 'data.json');
-request.responseType = 'json';
-
-request.send();
-request.onload = function () {
-    data = request.response;
-    catalogLoad();
+let catalogJSON = {
+    "products": [
+        {
+            "id": 1,
+            "name": "Декоративная маска \"Rules\"",
+            "image": "https://mamcupy.com/upload/resize_cache/iblock/e66/610_406_140cd750bba9870f18aada2478b24840a/e6699c6bcd9d42491ad6d37de20aea66.jpg",
+            "price": 600,
+            "description": "Маски выкраиваются из большого полотна, запечатанного принтом, поэтому рисунок на маске может отличаться от изделия к изделию."
+        },
+        {
+            "id": 2,
+            "name": "Декоративная маска \"RBL\"",
+            "image": "https://mamcupy.com/upload/resize_cache/iblock/b8e/610_406_140cd750bba9870f18aada2478b24840a/b8ef6fc8bbc94b58320ba803a9016699.jpg",
+            "price": 600,
+            "description": "Маски выкраиваются из большого полотна, запечатанного принтом, поэтому рисунок на маске может отличаться от изделия к изделию."
+        },
+        {
+            "id": 3,
+            "name": "Декоративная маска \"Дома\"",
+            "image": "https://mamcupy.com/upload/resize_cache/iblock/db3/610_406_140cd750bba9870f18aada2478b24840a/db3de205df3199ef36cc9131d19a145c.jpg",
+            "price": 600,
+            "description": "Маски выкраиваются из большого полотна, запечатанного принтом, поэтому рисунок на маске может отличаться от изделия к изделию."
+        }
+    ]
 }
 
-function catalogLoad() {
+
+/*Из-за политики CORS нельзя осуществить запрос на соседний файл -- Cross origin requests are only supported for protocol schemes: http, data, chrome, chrome-extension, https*/
+
+let xhr = new XMLHttpRequest();
+xhr.open('GET', './data.json');
+xhr.responseType = 'json';
+
+xhr.send();
+xhr.onload = function () {
+    data = xhr.response;
+    catalogLoad();
+}
+xhr.onerror = catalogLoad(catalogJSON);
+
+
+
+function catalogLoad(data) {
     data["products"].forEach(element => {
         catalog.innerHTML += `
             <div class="col-md-4">
@@ -92,7 +123,7 @@ function buyCart() {
         })
     }
 
-    let req = new XMLHttpRequest();
+    let request = new XMLHttpRequest();
     let params = {
         "TerminalKey": "TinkoffBankTest",
         "Amount": cartValue.value * 100,
@@ -104,13 +135,13 @@ function buyCart() {
             "Items": arr
         }
     };
-    req.open("POST", "https://securepay.tinkoff.ru/v2/Init", true);
-    req.setRequestHeader("Content-type", "application/json");
-    req.addEventListener("readystatechange", () => {
-        if(req.readyState === 4 && req.status === 200) {
-            let response = JSON.parse(req.response);
+    request.open("POST", "https://securepay.tinkoff.ru/v2/Init", true);
+    request.setRequestHeader("Content-type", "application/json");
+    request.addEventListener("readystatechange", () => {
+        if(request.readyState === 4 && request.status === 200) {
+            let response = JSON.parse(request.response);
             window.location.replace(response.PaymentURL);
         }
     });
-    req.send(JSON.stringify(params));
+    request.send(JSON.stringify(params));
 }
