@@ -45,7 +45,10 @@ xhr.onload = function () {
     data = xhr.response;
     catalogLoad();
 }
-xhr.onerror = catalogLoad(catalogJSON);
+xhr.onerror = () => {
+    data = catalogJSON;
+    catalogLoad(catalogJSON);
+}
 
 
 
