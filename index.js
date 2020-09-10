@@ -33,23 +33,17 @@ let catalogJSON = {
     ]
 }
 
-
-/*Из-за политики CORS нельзя осуществить запрос на соседний файл -- Cross origin requests are only supported for protocol schemes: http, data, chrome, chrome-extension, https*/
-
-let xhr = new XMLHttpRequest();
-xhr.open('GET', './data.json');
-xhr.responseType = 'json';
-
-xhr.send();
-xhr.onload = function () {
-    data = xhr.response;
-    catalogLoad();
-}
-xhr.onerror = () => {
-    data = catalogJSON;
-    catalogLoad(catalogJSON);
-}
-
+fetch("./data.json")
+    .then(response => response.json())
+    .then((json) => {
+        data = json
+        catalogLoad(data)
+    })
+    .catch((e) => {
+        console.log(e)
+        data = catalogJSON
+        catalogLoad(data)
+    })
 
 
 function catalogLoad(data) {
@@ -126,25 +120,24 @@ function buyCart() {
         })
     }
 
-    let request = new XMLHttpRequest();
-    let params = {
-        "TerminalKey": "TinkoffBankTest",
-        "Amount": cartValue.value * 100,
-        "OrderId": "120423",
-        "Description": "Buying masks",
-        "Receipt": {
-            "Email": "a@test.ru",
-            "Taxation": "osn",
-            "Items": arr
-        }
-    };
-    request.open("POST", "https://securepay.tinkoff.ru/v2/Init", true);
-    request.setRequestHeader("Content-type", "application/json");
-    request.addEventListener("readystatechange", () => {
-        if(request.readyState === 4 && request.status === 200) {
-            let response = JSON.parse(request.response);
-            window.location.replace(response.PaymentURL);
-        }
-    });
-    request.send(JSON.stringify(params));
+    fetch('https://securepay.tinkoff.ru/v2/Init', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "TerminalKey": "TinkoffBankTest",
+            "Amount": cartValue.value * 100,
+            "OrderId": "120423",
+            "Description": "Buying masks",
+            "Receipt": {
+                "Email": "a@test.ru",
+                "Taxation": "osn",
+                "Items": arr
+            }
+        })
+    })
+        .then(response => response.json())
+        .then(json => window.location.replace(json.PaymentURL))
+        .catch(e => console.log(e));
 }
